@@ -4,8 +4,10 @@ from helpers.database import SessionLocal
 from models.user_model import User
 from schemas.user_schema import UserCreate
 from helpers.auth import hash_password, verify_password, create_access_token
+from helpers.index import ApiResponse
 
 router = APIRouter()
+
 
 def get_db():
     db = SessionLocal()
@@ -13,6 +15,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 @router.post("/register")
 def register(user: UserCreate, db: Session = Depends(get_db)):
@@ -25,7 +28,11 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     )
     db.add(db_user)
     db.commit()
-    return {"success": True, "message": "User created"}
+    return ApiResponse.success(
+        data=db_user,
+        message="User created"
+    )
+
 
 @router.post("/login")
 def login(email: str, password: str, db: Session = Depends(get_db)):
@@ -34,4 +41,6 @@ def login(email: str, password: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401)
 
     token = create_access_token({"sub": user.id})
-    return {"access_token": token, "token_type": "bearer"}
+    return ApiResponse.success(
+        data={"access_token": token, "token_type": "bearer"},
+    )
