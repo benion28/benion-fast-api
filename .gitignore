@@ -1,3 +1,9 @@
 venv/
+.idea/
+*.swp
+*.swo
+.vscode/
 #.env
+*.pyc
+*.pyo
 __pycache__/
