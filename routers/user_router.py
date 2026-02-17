@@ -1,0 +1,37 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from helpers.database import SessionLocal
+from models.user_model import User
+from schemas.user_schema import UserCreate
+from helpers.auth import hash_password, verify_password, create_access_token
+
+router = APIRouter()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@router.post("/register")
+def register(user: UserCreate, db: Session = Depends(get_db)):
+    db_user = User(
+        first_name=user.first_name,
+        last_name=user.last_name,
+        email=user.email,
+        password=hash_password(user.password),
+        role=user.role
+    )
+    db.add(db_user)
+    db.commit()
+    return {"success": True, "message": "User created"}
+
+@router.post("/login")
+def login(email: str, password: str, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == email).first()
+    if not user or not verify_password(password, user.password):
+        raise HTTPException(status_code=401)
+
+    token = create_access_token({"sub": user.id})
+    return {"access_token": token, "token_type": "bearer"}
