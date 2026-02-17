@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from models.product_model import Product
 from schemas.product_schema import ProductCreate
-from helpers.dependencies import get_current_user, get_db
+from core.dependencies import get_current_user, get_db
 from sqlalchemy import func
-from helpers.index import ApiResponse
+from core.index import ApiResponse
 
 router = APIRouter(prefix="/products")
 
